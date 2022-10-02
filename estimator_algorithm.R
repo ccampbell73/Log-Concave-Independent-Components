@@ -28,6 +28,16 @@
 ##    the estimate of the true density (here * denotes the dot product).
 
 
+## INSTRUCTIONS: after modifying get_data to fit the desired data/application, 
+## run the following commands in the following order:
+
+## 1. get_data()
+## 2. randomize_and_split()
+## 3. generate_estimator()
+## 4. evaluate_estimator(x), where x is the vector in R^d at which you would 
+##                           like to evaluate the density. Run this as many 
+##                           times as needed after running the first 3 commands.
+
 
 library(logcondens) 
 
