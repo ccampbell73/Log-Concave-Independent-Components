@@ -16,7 +16,7 @@
 ## are as follows:
 
 ## 1. For mathematical analysis reasons, and to ensure there is no "confounding"
-##    between steps 2 and 3,first randomize the order of the samples, and then 
+##    between steps 2 and 3, first randomize the order of the samples, and then 
 ##    split them into two halves: Y_1, ..., Y_p and Z_1, ..., Z_q.
 ## 2. Compute an estimate W_hat of W by doing PCA on Y_1, ..., Y_p, and putting
 ##    the PCs into the rows of a matrix.
