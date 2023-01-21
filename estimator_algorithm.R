@@ -40,16 +40,15 @@
 
 
 library(logcondens) 
+library(LogConcDEAD)
 
 ## Generates/gets pre-processed data to be worked with. This should be modified
 ## according to the desired application and data. Creates global variable 
 ## pre_Data, which is a matrix whose rows represent each data point.
 get_data <- function() {
   library(MASS)
-  num_samples = 100
-  covariance = matrix(c(2, -1, 0, 
-                        -1, 2, -1, 
-                        0, -1, 2), 3, 3)
+  num_samples = 2000
+  covariance = diag(4)
   dimension = NROW(covariance)
   pre_data <<- mvrnorm(num_samples, numeric(dimension), covariance)
 }
@@ -91,6 +90,59 @@ evaluate_estimator <- function(x) {
   }
   return(result)
 }
+
+## Running time test functions:
+
+
+get_test_data <- function(d, n) {
+  library(MASS)
+  covariance = diag(d)
+  pre_data <<- mvrnorm(n, numeric(d), covariance)
+}
+
+running_time <- function(d, n) {
+  get_test_data(d, n)
+  
+  start_time <- Sys.time()
+  randomize_and_split()
+  generate_estimator()
+  end_time <- Sys.time()
+  
+  return(end_time - start_time)
+} 
+
+average_time <- function(d, n) {
+  num <- 50
+  sum = 0
+  for(i in 1:num) {
+    sum = sum + running_time(d, n)
+  }
+  return(sum/num)
+}
+
+running_time_LogConcDEAD <- function(d, n) {
+  get_test_data(d, n)
+  
+  start_time <- Sys.time()
+  mlelcd(pre_data)
+  end_time <- Sys.time()
+  
+  return(end_time - start_time)
+}
+
+average_time_LogConcDEAD <- function(d, n) {
+  num <- 50
+  sum = 0
+  for(i in 1:num) {
+    sum = sum + running_time_LogConcDEAD(d, n)
+  }
+  return(sum/num)
+}
+
+
+
+
+
 
 
 
