@@ -17,7 +17,9 @@
 
 ## 1. For mathematical analysis reasons, and to ensure there is no "confounding"
 ##    between steps 2 and 3, first randomize the order of the samples, and then 
-##    split them into two halves: Y_1, ..., Y_p and Z_1, ..., Z_q.
+##    split them into two sets: Y_1, ..., Y_p and Z_1, ..., Z_q. The fraction
+##    of samples going into the first set will be denoted by r, and is an 
+##    adjustable parameter in the computation.
 ## 2. Compute an estimate W_hat of W by doing PCA on Y_1, ..., Y_p, and putting
 ##    the PCs into the rows of a matrix.
 ## 3. Compute the vectors W_hat*Z_1, ..., W_hat*Z_q.
@@ -32,7 +34,8 @@
 ## run the following commands in the following order:
 
 ## 1. get_data()
-## 2. randomize_and_split()
+## 2. randomize_and_split(r), where r (0 <= x <= 1) is the fraction of samples
+##                            you want to use to estimate W_hat.
 ## 3. generate_estimator()
 ## 4. evaluate_estimator(x), where x is the vector in R^d at which you would 
 ##                           like to evaluate the density. Run this as many 
@@ -53,13 +56,14 @@ get_data <- function() {
   pre_data <<- mvrnorm(num_samples, numeric(dimension), covariance)
 }
 
-## Randomizes and splits the observations into two halves. If there is an odd
-## number of observations, places the extra in the second half. Must run 
+
+## Randomizes and splits the observations into two sets, with fraction r 
+## (0 <= r <= 1) of them going into the first set. Must run 
 ## get_Data first or else error. Creates global variables data_1 and data_2.
-randomize_and_split <- function() {
+randomize_and_split <- function(r) {
   dimension <<- NCOL(pre_data)
   num_samples = NROW(pre_data)
-  num_samples_1 = floor(num_samples / 2)
+  num_samples_1 = floor(r * num_samples)
   randomized_data = pre_data[sample(num_samples),]
   data_1 <<- randomized_data[1:num_samples_1,]
   data_2 <<- randomized_data[(num_samples_1+1):num_samples,]
@@ -91,8 +95,8 @@ evaluate_estimator <- function(x) {
   return(result)
 }
 
-## Running time test functions:
 
+## Running time test functions:
 
 get_test_data <- function(d, n) {
   library(MASS)
@@ -100,44 +104,27 @@ get_test_data <- function(d, n) {
   pre_data <<- mvrnorm(n, numeric(d), covariance)
 }
 
-running_time <- function(d, n) {
+running_time <- function(d, n, r) {
   get_test_data(d, n)
   
   start_time <- Sys.time()
-  randomize_and_split()
+  randomize_and_split(r)
   generate_estimator()
   end_time <- Sys.time()
   
   return(end_time - start_time)
 } 
 
-average_time <- function(d, n) {
+average_time <- function(d, n, r) {
   num <- 50
   sum = 0
   for(i in 1:num) {
-    sum = sum + running_time(d, n)
+    sum = sum + running_time(d, n, r)
   }
   return(sum/num)
 }
 
-running_time_LogConcDEAD <- function(d, n) {
-  get_test_data(d, n)
-  
-  start_time <- Sys.time()
-  mlelcd(pre_data)
-  end_time <- Sys.time()
-  
-  return(end_time - start_time)
-}
 
-average_time_LogConcDEAD <- function(d, n) {
-  num <- 50
-  sum = 0
-  for(i in 1:num) {
-    sum = sum + running_time_LogConcDEAD(d, n)
-  }
-  return(sum/num)
-}
 
 
 
