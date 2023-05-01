@@ -1,5 +1,5 @@
 ## Algorithm to compute a log-concave density estimate for n observations in 
-## R^d.
+## R^d (d >= 2).
 
 ## We make the following assumptions:
 ## 1. The observations are independent copies of a random variable X which has 
@@ -44,6 +44,7 @@
 
 library(logcondens) 
 library(LogConcDEAD)
+library(cubature)
 
 ## Generates/gets pre-processed data to be worked with. This should be modified
 ## according to the desired application and data. Creates global variable 
@@ -96,33 +97,62 @@ evaluate_estimator <- function(x) {
 }
 
 
-## Running time test functions:
+## TEST FUNCTIONS (FOR A STANDARD GAUSSIAN):
 
-get_test_data <- function(d, n) {
-  library(MASS)
-  covariance = diag(d)
-  pre_data <<- mvrnorm(n, numeric(d), covariance)
-}
-
-running_time <- function(d, n, r) {
-  get_test_data(d, n)
+## Generates n samples from a d-dimensional standard Gaussian and calculates
+## the density estimate using the algorithm above, with sample splitting ratio
+## r. If -1 is entered for err, then only the time taken to generate the 
+## estimator is returned; if a nonnegative number is entered for err, then the
+## squared Hellinger distance between the true Gaussian density and our 
+## algorithm's density estimate is returned, with maximum tolerable absolute
+## error err (if err = 0 then the best possible absolute error is obtained).
+standard_gaussian_test <- function(d, n, r, err) {
+  output <- matrix(data = NA, nrow = 1, ncol = 2, byrow = FALSE,
+                   dimnames = list(c(""), 
+                                   c("time (sec)        ", 
+                                     "error (Hellinger^2)")))
+  output[1,2] <- -1
+  
+  get_gaussian_test_data(d, n)
   
   start_time <- Sys.time()
   randomize_and_split(r)
   generate_estimator()
   end_time <- Sys.time()
   
-  return(end_time - start_time)
+  if (err >= 0) {
+    integrand <- function(x) {
+      return (0.5 * (sqrt(gaussian_test_data_pdf(x)) - 
+                       sqrt(evaluate_estimator(x)))^2)
+    }
+    output[1,2] <- adaptIntegrate(
+      integrand, rep(-Inf, dimension), rep(Inf, dimension), 
+      absError = err)$integral
+  }
+  
+  output[1, 1] <- end_time - start_time
+  return(output)
 } 
 
-average_time <- function(d, n, r) {
-  num <- 50
-  sum = 0
-  for(i in 1:num) {
-    sum = sum + running_time(d, n, r)
-  }
-  return(sum/num)
+## Helper functions for test:
+
+## Generates n samples from a d-dimensional standard Gaussian.
+get_gaussian_test_data <- function(d, n) {
+  library(MASS)
+  covariance = diag(d)
+  pre_data <<- mvrnorm(n, numeric(d), covariance)
 }
+
+## Evaluates the pdf of the Gaussian from get_gaussian_test_data at the point x.
+gaussian_test_data_pdf <- function(x) {
+  return ((2*pi)^(-0.5 * dimension) * exp(-0.5 * x %*% x))
+}
+
+
+
+
+
+
 
 
 
