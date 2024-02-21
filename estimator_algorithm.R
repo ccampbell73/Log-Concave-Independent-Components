@@ -45,6 +45,16 @@
 library(logcondens) 
 library(LogConcDEAD)
 library(cubature)
+library(JuliaCall)
+julia <- julia_setup()
+julia_install_package_if_needed("Integrals")
+julia_library("Integrals")
+julia_install_package_if_needed("IntegralsCuba")
+julia_library("IntegralsCuba")
+julia_install_package_if_needed("Distributions")
+julia_library("Distributions")
+
+
 
 ## Generates/gets pre-processed data to be worked with. This should be modified
 ## according to the desired application and data. Creates global variable 
@@ -134,7 +144,44 @@ standard_gaussian_test <- function(d, n, r, err) {
   return(output)
 } 
 
-## Helper functions for test:
+
+## In progress:
+standard_gaussian_test_2 <- function(d, n, r, err) {
+  output <- matrix(data = NA, nrow = 1, ncol = 2, byrow = FALSE,
+                   dimnames = list(c(""), 
+                                   c("time (sec)        ", 
+                                     "error (Hellinger^2)")))
+  output[1,2] <- -1
+  
+  get_gaussian_test_data(d, n)
+  
+  start_time <- Sys.time()
+  randomize_and_split(r)
+  generate_estimator()
+  end_time <- Sys.time()
+  
+
+  if (err >= 0) {
+    integrand <- function(x) {
+      return (0.5 * (sqrt(gaussian_test_data_pdf(x)) - 
+                       sqrt(evaluate_estimator(x)))^2)
+    }
+    #output[1,2] <- adaptIntegrate(
+      #integrand, rep(-Inf, dimension), rep(Inf, dimension), 
+      #absError = err)$integral
+  }
+  julia_assign("d", as.integer(d))
+  julia_assign("integrand", integrand)
+  julia_command("f(x, p) = integrand(x)")
+  julia_command("prob = IntegralProblem(f, -Inf * ones(d), Inf * ones(d))")
+  julia_command("sol = solve(prob, VEGAS(), reltol = 1e-3, abstol = 1e-3)")
+  
+  output[1, 1] <- end_time - start_time
+  return(output)
+} 
+
+
+## Helper functions for standard Gaussian test functions:
 
 ## Generates n samples from a d-dimensional standard Gaussian.
 get_gaussian_test_data <- function(d, n) {
