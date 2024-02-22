@@ -1,6 +1,6 @@
 .Rproj.user
-.Rhistory
-.RData
+.Rhistory-legacy
+.RData-legacy
 .Ruserdata
 .Rdata
 .httr-oauth

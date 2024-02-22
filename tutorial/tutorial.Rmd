@@ -1,17 +1,28 @@
 ---
 title: "Tutorial"
-output: pdf_document
-date: "2024-02-21"
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r setup, include=FALSE}
+```{r, include = FALSE}
+##source("put source here once you figure it out")
+```
+
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
 
-In this tutorial, we will walk through our proposed algorithm to produce a log-concave density estimate. First, run
-'''{r}
-get_data()
-'''
-which generates an $n \times d$ matrix 'get_data' containing $n$ samples in $\mathbb{R}^d$. The data should be at least $2$-dimensional, and 
+In this tutorial, we will walk through the application of our proposed algorithm discussed in section 4.1 of the paper. We run the command
+```{r}
+##test_data <- get_heteroskedastic_gaussian_data(n = 2, 1000, true_mean_vec=rep(0,d), Sigma_max=6, eigensep=3).
+```
+This returns an $n \times d$ matrix and stores it in the variable `test_data`, and is constructed by taking $n = 1000$ samples from a $d = 2$ dimensional Gaussian distribution, with mean `true_mean_vec` $(0, 0)$  and covariance $\text{diag}(6, 3)$ (a $d \times d$ diagonal matrix with upper-left entry `Sigma_max=6`, and decreasing in increments of `eigensep` until the diagonal is filled). The function `get_heteroskedastic_gaussian_data` is only included for the sake of examples and testing, and in real applications any $n \times d$ matrix can be used as data for the algorithm.
+
+Next, run
+```{r} 
+##new_estimator <- generate_estimator_with_logcondens(test_data, r = 0.5, plotting = TRUE)
+```
+This returns a list, consisting respectively of the PCA estimate of the miximg matrix $W$, a list of the $d$ marginal densities $\mathbb{R} \to \mathbb{R}$ of the estimator, and the mean of the estimated distribution.
