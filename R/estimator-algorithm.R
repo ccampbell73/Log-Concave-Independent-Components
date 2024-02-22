@@ -1,5 +1,5 @@
 ## Algorithm to compute a log-concave density estimate for n observations in 
-## R^d.
+## R^d (d >= 2).
 
 ## We make the following assumptions:
 ## 1. The observations are independent copies of a random variable X which has 
@@ -16,8 +16,10 @@
 ## are as follows:
 
 ## 1. For mathematical analysis reasons, and to ensure there is no "confounding"
-##    between steps 2 and 3,first randomize the order of the samples, and then 
-##    split them into two halves: Y_1, ..., Y_p and Z_1, ..., Z_q.
+##    between steps 2 and 3, first randomize the order of the samples, and then 
+##    split them into two sets: Y_1, ..., Y_p and Z_1, ..., Z_q. The fraction
+##    of samples going into the first set will be denoted by r, and is an 
+##    adjustable parameter in the computation.
 ## 2. Compute an estimate W_hat of W by doing PCA on Y_1, ..., Y_p, and putting
 ##    the PCs into the rows of a matrix.
 ## 3. Compute the vectors W_hat*Z_1, ..., W_hat*Z_q.
@@ -26,6 +28,18 @@
 ## 5. Let (W_hat)_i denote the ith row of W_hat. Return the density function
 ##    f: R^d -> R given by f(x) = f_1[(W_hat)_1 * x] ... f_d[(W_hat)_d * x] as 
 ##    the estimate of the true density (here * denotes the dot product).
+
+
+## INSTRUCTIONS: after modifying get_data to fit the desired data/application, 
+## run the following commands in the following order:
+
+## 1. get_data()
+## 2. randomize_and_split(r), where r (0 <= x <= 1) is the fraction of samples
+##                            you want to use to estimate W_hat.
+## 3. generate_estimator()
+## 4. evaluate_estimator(x), where x is the vector in R^d at which you would 
+##                           like to evaluate the density. Run this as many 
+##                           times as needed after running the first 3 commands.
 
 
 
